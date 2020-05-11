@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PRODUCT_VENDOR_KERNEL_HEADERS := hardware/qcom/msm8998/kernel-headers
+PRODUCT_VENDOR_KERNEL_HEADERS := hardware/qcom/sdm660/kernel-headers
