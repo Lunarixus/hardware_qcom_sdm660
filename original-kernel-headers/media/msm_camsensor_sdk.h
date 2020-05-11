@@ -46,7 +46,11 @@
 #define MAX_LED_TRIGGERS          3
 
 #define MSM_EEPROM_MEMORY_MAP_MAX_SIZE  80
-#define MSM_EEPROM_MAX_MEM_MAP_CNT      20
+#define MSM_EEPROM_MAX_MEM_MAP_CNT      8
+
+#define MSM_SENSOR_BYPASS_VIDEO_NODE    1
+
+#define FRONT_AUX_SENSOR_SUPPORT
 
 enum msm_sensor_camera_id_t {
 	CAMERA_0,
@@ -68,6 +72,7 @@ enum camb_position_t {
 	BACK_CAMERA_B,
 	FRONT_CAMERA_B,
 	AUX_CAMERA_B = 0x100,
+	FRONT_AUX_CAMERA_B,
 	INVALID_CAMERA_B,
 };
 
@@ -83,8 +88,10 @@ enum msm_camera_i2c_reg_addr_type {
 	MSM_CAMERA_I2C_BYTE_ADDR = 1,
 	MSM_CAMERA_I2C_WORD_ADDR,
 	MSM_CAMERA_I2C_3B_ADDR,
+	MSM_CAMERA_I2C_DWORD_ADDR,
 	MSM_CAMERA_I2C_ADDR_TYPE_MAX,
 };
+#define MSM_CAMERA_I2C_DWORD_ADDR MSM_CAMERA_I2C_DWORD_ADDR
 
 enum msm_camera_i2c_data_type {
 	MSM_CAMERA_I2C_BYTE_DATA = 1,
@@ -111,8 +118,10 @@ enum msm_sensor_power_seq_gpio_t {
 	SENSOR_GPIO_FL_RESET,
 	SENSOR_GPIO_CUSTOM1,
 	SENSOR_GPIO_CUSTOM2,
+	SENSOR_GPIO_CUSTOM3,
 	SENSOR_GPIO_MAX,
 };
+#define SENSOR_GPIO_CUSTOM3 SENSOR_GPIO_CUSTOM3
 
 enum msm_ir_cut_filter_gpio_t {
 	IR_CUT_FILTER_GPIO_P = 0,
@@ -167,6 +176,7 @@ enum msm_actuator_write_type {
 enum msm_actuator_i2c_operation {
 	MSM_ACT_WRITE = 0,
 	MSM_ACT_POLL,
+	MSM_ACT_POLL_RESULT,
 };
 
 enum actuator_type {
@@ -201,6 +211,13 @@ enum msm_ir_led_cfg_type_t {
 #define CFG_IR_LED_RELEASE CFG_IR_LED_RELEASE
 #define CFG_IR_LED_OFF CFG_IR_LED_OFF
 #define CFG_IR_LED_ON CFG_IR_LED_ON
+
+enum msm_laser_led_cfg_type_t {
+	CFG_LASER_LED_INIT,
+	CFG_LASER_LED_CONTROL,
+};
+#define CFG_LASER_LED_INIT CFG_LASER_LED_INIT
+#define CFG_LASER_LED_CONTROL CFG_LASER_LED_CONTROL
 
 enum msm_ir_cut_cfg_type_t {
 	CFG_IR_CUT_INIT = 0,
@@ -285,6 +302,30 @@ struct msm_sensor_id_info_t {
 	unsigned short sensor_id_mask;
 };
 
+enum msm_cci_i2c_master_t {
+	MSM_MASTER_0,
+	MSM_MASTER_1,
+	MSM_MASTER_MAX,
+};
+
+struct msm_vendor_id_info_t {
+	unsigned short eeprom_slave_addr;
+	unsigned short vendor_id_addr;
+	enum msm_camera_i2c_reg_addr_type addr_type;
+	unsigned short vendor_id;
+	enum msm_camera_i2c_data_type data_type;
+	enum msm_cci_i2c_master_t cci_i2c_master;
+};
+
+struct msm_vcm_id_info_t {
+	unsigned short eeprom_slave_addr;
+	unsigned short vcm_id_addr;
+	enum msm_camera_i2c_reg_addr_type addr_type;
+	unsigned short vcm_id;
+	enum msm_camera_i2c_data_type data_type;
+	enum msm_cci_i2c_master_t cci_i2c_master;
+};
+
 struct msm_camera_sensor_slave_info {
 	char sensor_name[32];
 	char eeprom_name[32];
@@ -296,10 +337,13 @@ struct msm_camera_sensor_slave_info {
 	enum i2c_freq_mode_t i2c_freq_mode;
 	enum msm_camera_i2c_reg_addr_type addr_type;
 	struct msm_sensor_id_info_t sensor_id_info;
+	struct msm_vendor_id_info_t vendor_id_info;
+	struct msm_vcm_id_info_t vcm_id_info;
 	struct msm_sensor_power_setting_array power_setting_array;
 	unsigned char  is_init_params_valid;
 	struct msm_sensor_init_params sensor_init_params;
 	enum msm_sensor_output_format_t output_format;
+	uint8_t bypass_video_node_creation;
 };
 
 struct msm_camera_i2c_reg_array {
@@ -353,6 +397,7 @@ struct msm_camera_csiphy_params {
 	unsigned char csid_core;
 	unsigned int csiphy_clk;
 	unsigned char csi_3phase;
+	uint64_t data_rate;
 };
 
 struct msm_camera_i2c_seq_reg_array {
